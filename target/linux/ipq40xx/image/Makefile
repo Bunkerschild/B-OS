@@ -122,8 +122,8 @@ define Device/linksys_ea8300
         DEVICE_DTS := qcom-ipq4019-ea8300
         PAGESIZE := 2048
         BLOCKSIZE := 128k
-        KERNEL_SIZE := 10240k
-        KERNEL = kernel-bin | append-dtb | uImage none | append-uImage-fakehdr filesystem
+        KERNEL_SIZE := 3072k
+	KERNEL =  kernel-bin | lzma | fit lzma $$(DTS_DIR)/$$(DEVICE_DTS).dtb | pad-to $$(BLOCKSIZE)
         BOARD_NAME := ea8300
         SUPPORTED_DEVICES += ea8300
         UBINIZE_OPTS := -E 5

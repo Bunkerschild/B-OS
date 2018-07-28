@@ -14,6 +14,11 @@ define Device/Default
 	IMAGE/sysupgrade.bin/squashfs :=
 endef
 
+define Build/xz
+        $(STAGING_DIR_HOST)/bin/xz --check=crc32 --lzma2=dict=1MiB $@
+        mv $@.xz $@
+endef
+
 define Device/FitImage
 	KERNEL_SUFFIX := -fit-uImage.itb
 	KERNEL = kernel-bin | gzip | fit gzip $$(DTS_DIR)/$$(DEVICE_DTS).dtb
@@ -23,6 +28,12 @@ endef
 define Device/FitImageLzma
 	KERNEL_SUFFIX := -fit-uImage.itb
 	KERNEL = kernel-bin | lzma | fit lzma $$(DTS_DIR)/$$(DEVICE_DTS).dtb
+	KERNEL_NAME := Image
+endef
+
+define Device/FitImageXz
+	KERNEL_SUFFIX := -fit-uImage.itb
+	KERNEL = kernel-bin | xz | fit xz $$(DTS_DIR)/$$(DEVICE_DTS).dtb
 	KERNEL_NAME := Image
 endef
 
@@ -123,12 +134,12 @@ define Device/linksys_ea8300
         PAGESIZE := 2048
         BLOCKSIZE := 128k
         KERNEL_SIZE := 3072k
-	KERNEL =  kernel-bin | lzma | fit lzma $$(DTS_DIR)/$$(DEVICE_DTS).dtb | pad-to $$(BLOCKSIZE)
+	KERNEL = kernel-bin | xz | fit xz $$(DTS_DIR)/$$(DEVICE_DTS).dtb | pad-to $$(BLOCKSIZE) | uImage none | append-uImage-fakehdr filesystem
         BOARD_NAME := ea8300
         SUPPORTED_DEVICES += ea8300
         UBINIZE_OPTS := -E 5
         IMAGES := factory.bin sysupgrade.bin
-        IMAGE/factory.bin := append-kernel | pad-to $$$${KERNEL_SIZE} | append-ubi | pad-to $$$$(PAGESIZE)
+        IMAGE/factory.bin := append-kernel | pad-to $$$${KERNEL_SIZE} | append-ubi
         DEVICE_TITLE := Linksys EA8300
         DEVICE_PACKAGES := ath10k-firmware-qca9888 uboot-envtools
 endef
